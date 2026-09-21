@@ -1,0 +1,74 @@
+- type: entity
+  parent: BaseItem
+  id: CitationPrinter
+  name: citation printer
+  description: A handheld thermal printer for issuing security citations.
+  components:
+  - type: Sprite
+    sprite: Objects/Tools/hand_labeler.rsi
+    state: hand_labeler
+
+  - type: Item
+    sprite: Objects/Tools/hand_labeler.rsi
+    storedRotation: -90
+
+  - type: ActivatableUI
+    key: enum.CitationPrinterUiKey.Key
+    inHandsOnly: true
+    requireActiveHand: true
+    singleUser: true
+    blockSpectators: true
+
+  - type: UserInterface
+    interfaces:
+      enum.CitationPrinterUiKey.Key:
+        type: CitationPrinterBoundUserInterface
+
+  - type: CitationPrinter
+    printedPrototype: PaperCitation
+    printDelay: 5
+    printSound:
+      path: /Audio/Machines/printer.ogg
+    heading: "SECURITY CITATION"
+    footer: "FORMAL NOTICE OF OFFENSE; FURTHER PENALTIES SUBJECT TO OFFICER DISCRETION"
+
+  - type: PhysicalComposition
+    materialComposition:
+      Plastic: 25
+
+
+- type: entity
+  parent: Paper
+  id: PaperCitation
+  name: citation slip
+  description: A printed citation slip.
+  components:
+  - type: StaticPrice
+    price: 0
+
+  - type: Sprite
+    sprite: Objects/Misc/bureaucracy.rsi
+    layers:
+    - state: paper_receipt_horizontal
+      color: "#FFCBDD"
+
+    - state: paper_receipt_horizontal_words
+      map: ["enum.PaperVisualLayers.Writing"]
+      visible: false
+
+    - state: paper_stamp-generic
+      map: ["enum.PaperVisualLayers.Stamp"]
+      visible: false
+
+  - type: PaperVisuals
+
+    backgroundImagePath: "/Textures/Interface/Paper/paper_background_default.svg.96dpi.png"
+    backgroundModulate: "#FFCBDD"
+    backgroundImageTile: false
+    backgroundPatchMargin: 16.0, 16.0, 16.0, 16.0
+
+    contentMargin: 20.0, 16.0, 20.0, 16.0
+
+    fontAccentColor: "#FFFFFF"
+
+    maxWritableArea: 560.0, 280.0
