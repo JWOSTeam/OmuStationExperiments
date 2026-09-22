@@ -31,9 +31,6 @@ public sealed class CitationPrinterSystem : EntitySystem
             BeforeActivatableUIOpenEvent>(OnBeforeUiOpen);
 
         SubscribeLocalEvent<CitationPrinterComponent,
-            CitationPrinterRefreshMessage>(OnRefresh);
-
-        SubscribeLocalEvent<CitationPrinterComponent,
             CitationPrinterPrintMessage>(OnPrint);
     }
 
@@ -42,18 +39,7 @@ public sealed class CitationPrinterSystem : EntitySystem
         CitationPrinterComponent component,
         BeforeActivatableUIOpenEvent args)
     {
-        UpdateUi(uid, component, args.User);
-    }
-
-    private void OnRefresh(
-        EntityUid uid,
-        CitationPrinterComponent component,
-        CitationPrinterRefreshMessage args)
-    {
-        if (!CanUse(uid, args.Actor))
-            return;
-
-        UpdateUi(uid, component, args.Actor);
+        UpdateUi(uid, component);
     }
 
     private bool CanUse(EntityUid printer, EntityUid actor)
@@ -88,8 +74,7 @@ public sealed class CitationPrinterSystem : EntitySystem
 
     private void UpdateUi(
         EntityUid uid,
-        CitationPrinterComponent component,
-        EntityUid actor)
+        CitationPrinterComponent component)
     {
         var remaining = component.NextPrintAllowedAfter - _timing.CurTime;
 
@@ -99,7 +84,7 @@ public sealed class CitationPrinterSystem : EntitySystem
         _ui.SetUiState(
             uid,
             CitationPrinterUiKey.Key,
-            new CitationPrinterUiState(GetIssuerName(actor), remaining));
+            new CitationPrinterUiState(remaining));
     }
 
     private void OnPrint(
@@ -110,17 +95,16 @@ public sealed class CitationPrinterSystem : EntitySystem
         if (!CanUse(uid, args.Actor))
             return;
 
-        // independent validation
-        if (!CitationPrinterConstants.IsValidField(args.RecipientName)
-            || !CitationPrinterConstants.IsValidField(args.Offense))
+        if (!CitationPrinterConstants.IsValidName(args.RecipientName)
+            || !CitationPrinterConstants.IsValidOffense(args.Offense))
         {
-            UpdateUi(uid, component, args.Actor);
+            UpdateUi(uid, component);
             return;
         }
 
         if (_timing.CurTime < component.NextPrintAllowedAfter)
         {
-            UpdateUi(uid, component, args.Actor);
+            UpdateUi(uid, component);
             return;
         }
 
@@ -142,11 +126,10 @@ public sealed class CitationPrinterSystem : EntitySystem
                 + "does not have a PaperComponent.");
 
             Del(printed);
-            UpdateUi(uid, component, args.Actor);
+            UpdateUi(uid, component);
             return;
         }
 
-        // SetContent updates stuff
         _paper.SetContent((printed, paper), content);
 
         component.NextPrintAllowedAfter =
@@ -155,7 +138,7 @@ public sealed class CitationPrinterSystem : EntitySystem
         _hands.PickupOrDrop(args.Actor, printed);
         _audio.PlayPvs(component.PrintSound, uid);
 
-        UpdateUi(uid, component, args.Actor);
+        UpdateUi(uid, component);
     }
 
     private static string BuildContent(
@@ -164,7 +147,6 @@ public sealed class CitationPrinterSystem : EntitySystem
         string offense,
         string issuer)
     {
-        // escape substituted values
         var heading = FormattedMessage.EscapeText(component.Heading);
         var name = FormattedMessage.EscapeText(recipientName);
         var offenseText = FormattedMessage.EscapeText(offense);
@@ -172,10 +154,10 @@ public sealed class CitationPrinterSystem : EntitySystem
         var footer = FormattedMessage.EscapeText(component.Footer);
 
         return
-            $"[bold]{heading}[/bold]\n\n"
-            + $"[bold]Name:[/bold] {name}\n"
-            + $"[bold]Offense:[/bold] {offenseText}\n"
-            + $"[bold]Issued by:[/bold] {issuerText}\n\n"
-            + $"[italic]{footer}[/italic]";
+            $"[mono]{heading}[/mono]\n\n"
+            + $"[mono]NAME: {name}[/mono]\n"
+            + $"[mono]OFFENSE: {offenseText}[/mono]\n"
+            + $"[mono]ISSUING OFFICER: {issuerText}[/mono]\n\n"
+            + $"[mono]{footer}[/mono]";
     }
 }

@@ -24,9 +24,6 @@ public sealed class CitationPrinterBoundUserInterface : BoundUserInterface
 
         _window.PrintRequested += (name, offense) =>
             SendMessage(new CitationPrinterPrintMessage(name, offense));
-
-        _window.RefreshRequested += () =>
-            SendMessage(new CitationPrinterRefreshMessage());
     }
 
     protected override void UpdateState(BoundUserInterfaceState state)
@@ -40,8 +37,6 @@ public sealed class CitationPrinterBoundUserInterface : BoundUserInterface
         }
 
         var revision = ++_stateRevision;
-
-        window.SetIssuer(printerState.IssuerName);
 
         if (printerState.RemainingCooldown <= TimeSpan.Zero)
         {

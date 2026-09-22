@@ -12,17 +12,15 @@ public sealed class CitationPrinterWindow : DefaultWindow
 {
     private readonly LineEdit _nameInput;
     private readonly LineEdit _offenseInput;
-    private readonly Label _issuerValue;
     private readonly Label _status;
     private readonly Button _printButton;
 
     public event Action<string, string>? PrintRequested;
-    public event Action? RefreshRequested;
 
     public CitationPrinterWindow()
     {
         Title = "Citation printer";
-        MinSize = new Vector2(480, 300);
+        MinSize = new Vector2(480, 220);
 
         var root = new BoxContainer
         {
@@ -41,8 +39,8 @@ public sealed class CitationPrinterWindow : DefaultWindow
         _nameInput = new LineEdit
         {
             HorizontalExpand = true,
-            PlaceHolder = "Name of the person receiving the citation",
-            IsValid = CitationPrinterConstants.IsValidField
+            PlaceHolder = "Clowny McHonkface",
+            IsValid = CitationPrinterConstants.IsValidName
         };
         root.AddChild(_nameInput);
 
@@ -54,28 +52,10 @@ public sealed class CitationPrinterWindow : DefaultWindow
         _offenseInput = new LineEdit
         {
             HorizontalExpand = true,
-            PlaceHolder = "Description of the offense",
-            IsValid = CitationPrinterConstants.IsValidField
+            PlaceHolder = "Littering",
+            IsValid = CitationPrinterConstants.IsValidOffense
         };
         root.AddChild(_offenseInput);
-
-        root.AddChild(new Label
-        {
-            Text = "Maximum 128 characters per editable field."
-        });
-
-        root.AddChild(new Label
-        {
-            Text = "Issued by"
-        });
-
-        // read only
-        _issuerValue = new Label
-        {
-            Text = string.Empty,
-            MinSize = new Vector2(0, 24)
-        };
-        root.AddChild(_issuerValue);
 
         _status = new Label
         {
@@ -90,11 +70,6 @@ public sealed class CitationPrinterWindow : DefaultWindow
         };
         root.AddChild(buttons);
 
-        var refreshButton = new Button
-        {
-            Text = "Refresh ID"
-        };
-
         var clearButton = new Button
         {
             Text = "Clear"
@@ -106,11 +81,8 @@ public sealed class CitationPrinterWindow : DefaultWindow
             Disabled = true
         };
 
-        buttons.AddChild(refreshButton);
         buttons.AddChild(clearButton);
         buttons.AddChild(_printButton);
-
-        refreshButton.OnPressed += _ => RefreshRequested?.Invoke();
 
         clearButton.OnPressed += _ =>
         {
@@ -121,8 +93,8 @@ public sealed class CitationPrinterWindow : DefaultWindow
 
         _printButton.OnPressed += _ =>
         {
-            if (!CitationPrinterConstants.IsValidField(_nameInput.Text)
-                || !CitationPrinterConstants.IsValidField(_offenseInput.Text))
+            if (!CitationPrinterConstants.IsValidName(_nameInput.Text)
+                || !CitationPrinterConstants.IsValidOffense(_offenseInput.Text))
             {
                 return;
             }
@@ -136,14 +108,9 @@ public sealed class CitationPrinterWindow : DefaultWindow
         };
     }
 
-    public void SetIssuer(string issuer)
-    {
-        _issuerValue.Text = issuer;
-    }
-
     public void SetPrintReady(bool ready)
     {
         _printButton.Disabled = !ready;
-        _status.Text = ready ? "Ready." : "Printer cooling down...";
+        _status.Text = ready ? "Ready" : "Cooling down...";
     }
 }

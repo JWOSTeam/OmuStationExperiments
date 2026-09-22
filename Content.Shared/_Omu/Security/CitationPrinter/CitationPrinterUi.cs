@@ -6,11 +6,18 @@ namespace Content.Shared._Omu.CitationPrinter;
 
 public static class CitationPrinterConstants
 {
-    public const int MaximumFieldLength = 128;
+    public const int MaximumNameLength = 96;
+    public const int MaximumOffenseLength = 128;
 
-    public static bool IsValidField(string? text)
+    public static bool IsValidName(string? text) =>
+        IsValidField(text, MaximumNameLength);
+
+    public static bool IsValidOffense(string? text) =>
+        IsValidField(text, MaximumOffenseLength);
+
+    private static bool IsValidField(string? text, int maximumLength)
     {
-        if (text == null || text.Length > MaximumFieldLength)
+        if (text == null || text.Length > maximumLength)
             return false;
 
         foreach (var character in text)
@@ -43,21 +50,12 @@ public sealed class CitationPrinterPrintMessage : BoundUserInterfaceMessage
 }
 
 [Serializable, NetSerializable]
-public sealed class CitationPrinterRefreshMessage : BoundUserInterfaceMessage
-{
-}
-
-[Serializable, NetSerializable]
 public sealed class CitationPrinterUiState : BoundUserInterfaceState
 {
-    public readonly string IssuerName;
     public readonly TimeSpan RemainingCooldown;
 
-    public CitationPrinterUiState(
-        string issuerName,
-        TimeSpan remainingCooldown)
+    public CitationPrinterUiState(TimeSpan remainingCooldown)
     {
-        IssuerName = issuerName;
         RemainingCooldown = remainingCooldown;
     }
 }
