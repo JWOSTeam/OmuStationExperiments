@@ -61,14 +61,17 @@
       visible: false
 
   - type: PaperVisuals
-
-    backgroundImagePath: "/Textures/Interface/Paper/paper_background_default.svg.96dpi.png"
+    backgroundImagePath: "/Textures/Interface/Paper/paper_background_dotmatrix.svg.96dpi.png"
+    backgroundImageTile: true
     backgroundModulate: "#FFCBDD"
-    backgroundImageTile: false
-    backgroundPatchMargin: 16.0, 16.0, 16.0, 16.0
+    backgroundPatchMargin: 37.0, 0.0, 37.0, 0.0
 
-    contentMargin: 20.0, 16.0, 20.0, 16.0
+    contentImagePath: "/Textures/Interface/Paper/paper_content_dotmatrix.svg.96dpi.png"
+    contentImageNumLines: 2
+    contentImageModulate: "#FFCBDD"
+
+    contentMargin: 10.0, 8.0, 10.0, 8.0
 
     fontAccentColor: "#FFFFFF"
 
-    maxWritableArea: 560.0, 280.0
+    maxWritableArea: 560.0, 260.0

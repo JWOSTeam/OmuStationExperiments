@@ -1,6 +1,8 @@
 using System;
+using Content.Server.Pinpointer;
 using Content.Shared.Access.Systems;
 using Content.Shared.ActionBlocker;
+using Content.Shared.GameTicking;
 using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Paper;
 using Content.Shared.UserInterface;
@@ -22,6 +24,8 @@ public sealed class CitationPrinterSystem : EntitySystem
     [Dependency] private readonly PaperSystem _paper = default!;
     [Dependency] private readonly SharedAudioSystem _audio = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private readonly NavMapSystem _navMap = default!;
+    [Dependency] private readonly SharedGameTicker _gameTicker = default!;
 
     public override void Initialize()
     {
@@ -72,6 +76,25 @@ public sealed class CitationPrinterSystem : EntitySystem
             : name.Trim();
     }
 
+    private string GetCitationLocation(EntityUid actor)
+    {
+        var location = _navMap.GetNearestBeaconString(
+            (actor, Transform(actor)));
+
+        return FormattedMessage.RemoveMarkupOrThrow(location);
+    }
+
+    private string GetShiftTime()
+    {
+        var elapsed = _gameTicker.RoundDuration();
+
+        if (elapsed < TimeSpan.Zero)
+            elapsed = TimeSpan.Zero;
+
+        return FormattableString.Invariant(
+            $"{(long) elapsed.TotalHours:00}:{elapsed.Minutes:00}:{elapsed.Seconds:00}");
+    }
+
     private void UpdateUi(
         EntityUid uid,
         CitationPrinterComponent component)
@@ -96,7 +119,8 @@ public sealed class CitationPrinterSystem : EntitySystem
             return;
 
         if (!CitationPrinterConstants.IsValidName(args.RecipientName)
-            || !CitationPrinterConstants.IsValidOffense(args.Offense))
+            || !CitationPrinterConstants.IsValidOffense(args.Offense)
+            || !CitationPrinterConstants.IsValidNotes(args.Notes))
         {
             UpdateUi(uid, component);
             return;
@@ -109,11 +133,17 @@ public sealed class CitationPrinterSystem : EntitySystem
         }
 
         var issuer = GetIssuerName(args.Actor);
+        var location = GetCitationLocation(args.Actor);
+        var shiftTime = GetShiftTime();
+
         var content = BuildContent(
             component,
             args.RecipientName.Trim(),
             args.Offense.Trim(),
-            issuer);
+            issuer,
+            location,
+            shiftTime,
+            args.Notes.Trim());
 
         var printed = Spawn(
             component.PrintedPrototype,
@@ -145,19 +175,28 @@ public sealed class CitationPrinterSystem : EntitySystem
         CitationPrinterComponent component,
         string recipientName,
         string offense,
-        string issuer)
+        string issuer,
+        string location,
+        string shiftTime,
+        string notes)
     {
         var heading = FormattedMessage.EscapeText(component.Heading);
         var name = FormattedMessage.EscapeText(recipientName);
         var offenseText = FormattedMessage.EscapeText(offense);
         var issuerText = FormattedMessage.EscapeText(issuer);
+        var locationText = FormattedMessage.EscapeText(location);
+        var shiftTimeText = FormattedMessage.EscapeText(shiftTime);
+        var notesText = FormattedMessage.EscapeText(notes);
         var footer = FormattedMessage.EscapeText(component.Footer);
 
         return
             $"[mono]{heading}[/mono]\n\n"
             + $"[mono]NAME: {name}[/mono]\n"
             + $"[mono]OFFENSE: {offenseText}[/mono]\n"
-            + $"[mono]ISSUING OFFICER: {issuerText}[/mono]\n\n"
+            + $"[mono]ISSUING OFFICER: {issuerText}[/mono]\n"
+            + $"[mono]LOCATION: {locationText}[/mono]\n"
+            + $"[mono]SHIFT TIME: {shiftTimeText}[/mono]\n"
+            + $"[mono]NOTES: {notesText}[/mono]\n\n"
             + $"[mono]{footer}[/mono]";
     }
 }

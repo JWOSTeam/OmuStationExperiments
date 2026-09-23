@@ -6,14 +6,18 @@ namespace Content.Shared._Omu.CitationPrinter;
 
 public static class CitationPrinterConstants
 {
-    public const int MaximumNameLength = 96;
-    public const int MaximumOffenseLength = 128;
+    public const int MaximumNameLength = 64;
+    public const int MaximumOffenseLength = 96;
+    public const int MaximumNotesLength = 64;
 
     public static bool IsValidName(string? text) =>
         IsValidField(text, MaximumNameLength);
 
     public static bool IsValidOffense(string? text) =>
         IsValidField(text, MaximumOffenseLength);
+
+    public static bool IsValidNotes(string? text) =>
+        IsValidField(text, MaximumNotesLength);
 
     private static bool IsValidField(string? text, int maximumLength)
     {
@@ -41,11 +45,16 @@ public sealed class CitationPrinterPrintMessage : BoundUserInterfaceMessage
 {
     public readonly string RecipientName;
     public readonly string Offense;
+    public readonly string Notes;
 
-    public CitationPrinterPrintMessage(string recipientName, string offense)
+    public CitationPrinterPrintMessage(
+        string recipientName,
+        string offense,
+        string notes)
     {
         RecipientName = recipientName;
         Offense = offense;
+        Notes = notes;
     }
 }
 

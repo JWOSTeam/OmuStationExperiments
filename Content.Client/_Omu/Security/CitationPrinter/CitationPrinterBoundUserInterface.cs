@@ -22,8 +22,8 @@ public sealed class CitationPrinterBoundUserInterface : BoundUserInterface
 
         _window = this.CreateWindow<CitationPrinterWindow>();
 
-        _window.PrintRequested += (name, offense) =>
-            SendMessage(new CitationPrinterPrintMessage(name, offense));
+        _window.PrintRequested += (name, offense, notes) =>
+            SendMessage(new CitationPrinterPrintMessage(name, offense, notes));
     }
 
     protected override void UpdateState(BoundUserInterfaceState state)

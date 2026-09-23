@@ -12,15 +12,16 @@ public sealed class CitationPrinterWindow : DefaultWindow
 {
     private readonly LineEdit _nameInput;
     private readonly LineEdit _offenseInput;
+    private readonly LineEdit _notesInput;
     private readonly Label _status;
     private readonly Button _printButton;
 
-    public event Action<string, string>? PrintRequested;
+    public event Action<string, string, string>? PrintRequested;
 
     public CitationPrinterWindow()
     {
         Title = "Citation printer";
-        MinSize = new Vector2(480, 220);
+        MinSize = new Vector2(480, 240);
 
         var root = new BoxContainer
         {
@@ -57,6 +58,19 @@ public sealed class CitationPrinterWindow : DefaultWindow
         };
         root.AddChild(_offenseInput);
 
+        root.AddChild(new Label
+        {
+            Text = "Notes"
+        });
+
+        _notesInput = new LineEdit
+        {
+            HorizontalExpand = true,
+            PlaceHolder = "Additional details",
+            IsValid = CitationPrinterConstants.IsValidNotes
+        };
+        root.AddChild(_notesInput);
+
         _status = new Label
         {
             Text = "Reading printer state..."
@@ -88,13 +102,15 @@ public sealed class CitationPrinterWindow : DefaultWindow
         {
             _nameInput.Text = string.Empty;
             _offenseInput.Text = string.Empty;
+            _notesInput.Text = string.Empty;
             _nameInput.GrabKeyboardFocus();
         };
 
         _printButton.OnPressed += _ =>
         {
             if (!CitationPrinterConstants.IsValidName(_nameInput.Text)
-                || !CitationPrinterConstants.IsValidOffense(_offenseInput.Text))
+                || !CitationPrinterConstants.IsValidOffense(_offenseInput.Text)
+                || !CitationPrinterConstants.IsValidNotes(_notesInput.Text))
             {
                 return;
             }
@@ -104,7 +120,8 @@ public sealed class CitationPrinterWindow : DefaultWindow
 
             PrintRequested?.Invoke(
                 _nameInput.Text,
-                _offenseInput.Text);
+                _offenseInput.Text,
+                _notesInput.Text);
         };
     }
 
